@@ -27,13 +27,28 @@ class EventController extends ControllerBase{
       $name = trim($this->request->getPost('name')); // รับค่าจาก form
       $date = trim($this->request->getPost('day')); // รับค่าจาก form
       $detail = trim($this->request->getPost('detail')); // รับค่าจาก form
-      $picture = trim($this->request->getPost('customFile')); 
+     
+      $photoUpdate='';
+      if($this->request->hasFiles() == true){
+        $allowed = array("jpg" => "image/jpg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png");
+        $uploads = $this->request->getUploadedFiles();
+        $isUploaded = false;			
+        foreach($uploads as $upload){
+          if(in_array($upload->gettype(), $allowed)){					
+            $photoName=md5(uniqid(rand(), true)).strtolower($upload->getname());
+            $path = '../public/img/'.$photoName;
+            ($upload->moveTo($path)) ? $isUploaded = true : $isUploaded = false;
+          }
+        }
+        if($isUploaded)  $photoUpdate=$photoName ;
+        }
+
       $id=$this->session->get('id');
       $event=Event::findFirst("id = '$id'");
       $event->event_name=$name;
       $event->event_date=$date;
       $event->event_detail=$detail;
-      $event->event_picture=$picture;
+      $event->event_picture=$photoUpdate;
       $event->save();
       $this->response->redirect('event');
       }
